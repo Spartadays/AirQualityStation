@@ -13,6 +13,8 @@ def main():
 
         # 1-Wire Sensor:
         sensor = w1thermsensor.W1ThermSensor()
+        # sensor_max = 125
+        # sensor_min = -55
 
         # ARG 1:
         try:
