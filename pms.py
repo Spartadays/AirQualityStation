@@ -15,6 +15,8 @@ def main():
         parity=serial.PARITY_NONE
     )
 
+# TODO: MOVE PMS7003 TO CLASS
+
     # MAIN LOOP:
     while True:
         try:
