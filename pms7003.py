@@ -38,5 +38,27 @@ class PMS7003:
 
         self.check_code = None
 
+    def get_data_by_number(self, number):
+        pass  # TODO:
+
+    def get_pm1_0(self, cf=0):
+        if cf == 1:
+            return self.get_data_by_number(1)
+        else:
+            return self.get_data_by_number(4)
+
+    def get_pm2_5(self, cf=0):
+        if cf == 1:
+            return self.get_data_by_number(2)
+        else:
+            return self.get_data_by_number(5)
+
+    def get_pm10(self, cf=0):
+        if cf == 1:
+            return self.get_data_by_number(3)
+        else:
+            return self.get_data_by_number(6)
+
+
 # TODO: zrob funkcje do zwracania poszczegolnych pomiarow z obiektu, funkcje do wypisania w konsoli calosci,
 #       obsluge bledow, funkcje update ktora odczytuje ramke z pms a jak nie to czeka
