@@ -2,7 +2,6 @@ try:
     import pms7003
     import w1thermsensor
     import datetime
-    import time
     import requests
     import sys
 except ImportError as i_error:
