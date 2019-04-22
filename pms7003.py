@@ -1,25 +1,35 @@
 try:
     import serial
+    import time
 except ImportError as i_error:
     print(i_error.__class__.__name__ + ": " + i_error.name)
     exit(-1)
 
-DATA_1 = 0  # PM1.0 concentration unit ug/m3 (CF = 1, standard particle)
-DATA_2 = 1  # PM2.5 concentration unit ug/m3 (CF = 1, standard particle)
-DATA_3 = 2  # PM10 concentration unit ug/m3 (CF = 1, standard particle)
-DATA_4 = 3  # PM1.0 concentration unit ug/m3 (under atmospheric environment)
-DATA_5 = 4  # PM2.5 concentration unit ug/m3 (under atmospheric environment)
-DATA_6 = 5  # PM10 concentration unit ug/m3 (under atmospheric environment)
-DATA_7 = 6  # Number of particles with diameter beyond 0.3 um in 0.1 L of air
-DATA_8 = 7  # Number of particles with diameter beyond 0.5 um in 0.1 L of air
-DATA_9 = 8  # Number of particles with diameter beyond 1.0 um in 0.1 L of air
-DATA_10 = 9  # Number of particles with diameter beyond 2.5 um in 0.1 L of air
-DATA_11 = 10  # Number of particles with diameter beyond 5.0 um in 0.1 L of air
-DATA_12 = 11  # Number of particles with diameter beyond 10 um in 0.1 L of air
+# MODE:
+active = 'active'
+# passive = 'passive'  # TODO: in progress
+
+# STATES:
+sleep = 'sleep'
+wakeup = 'wakeup'
+
+# DATA:
+DATA_1 = PM1_0CF1 = 0  # PM1.0 concentration unit ug/m3 (CF = 1, standard particle)
+DATA_2 = PM2_5CF1 = 1  # PM2.5 concentration unit ug/m3 (CF = 1, standard particle)
+DATA_3 = PM10CF1 = 2  # PM10 concentration unit ug/m3 (CF = 1, standard particle)
+DATA_4 = PM1_0 = 3  # PM1.0 concentration unit ug/m3 (under atmospheric environment)
+DATA_5 = PM2_5 = 4  # PM2.5 concentration unit ug/m3 (under atmospheric environment)
+DATA_6 = PM10 = 5  # PM10 concentration unit ug/m3 (under atmospheric environment)
+DATA_7 = NUM_OF_PAR_0_3_UM_IN_0_1_L_OF_AIR = 6  # Number of particles with diameter beyond 0.3 um in 0.1 L of air
+DATA_8 = NUM_OF_PAR_0_5_UM_IN_0_1_L_OF_AIR = 7  # Number of particles with diameter beyond 0.5 um in 0.1 L of air
+DATA_9 = NUM_OF_PAR_1_UM_IN_0_1_L_OF_AIR = 8  # Number of particles with diameter beyond 1.0 um in 0.1 L of air
+DATA_10 = NUM_OF_PAR_2_5_UM_IN_0_1_L_OF_AIR = 9  # Number of particles with diameter beyond 2.5 um in 0.1 L of air
+DATA_11 = NUM_OF_PAR_5_0_UM_IN_0_1_L_OF_AIR = 10  # Number of particles with diameter beyond 5.0 um in 0.1 L of air
+DATA_12 = NUM_OF_PAR_10_UM_IN_0_1_L_OF_AIR = 11  # Number of particles with diameter beyond 10 um in 0.1 L of air
 
 
 class PMS7003:
-
+    """PMS7003 - air quality sensor class"""
     def __init__(self, port=None):
         """Crate PMS7003 sensor object on given COM port (default '/dev/ttyS0' rx/tx pins on Raspberry)"""
         if port is None:
@@ -30,18 +40,14 @@ class PMS7003:
             stopbits=1,
             parity=serial.PARITY_NONE
         )
-
-        self.mode = 'active'  # 'active' or 'passive'
-
-        self.transmission_flag = False
-        self.start_bits_flag = False
-        self.data_length_flag = False
-
+        self.read_flag = False
         self.measures = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
         self.cf = 0  # Call Factor: CF = 1 should be used in the factory environment
-
-        self.check_code = None
+        self.send_command(wakeup)
+        self.send_command(active)
+        print('Initializing sensor. Please wait...')
+        for i in range(10):
+            self.get_all_measures()
 
     def read_transmission(self):
         """Read serial data, process them and update class variables"""
@@ -50,31 +56,39 @@ class PMS7003:
             return int.from_bytes(sequence, byteorder='big', signed=False)
 
         data = self.pms_serial.read(32)
-        self.transmission_flag = True
 
         if data[0] == 0x42 and data[1] == 0x4d:
-            self.start_bits_flag = True
+            start_bits_flag = True
         else:
-            self.start_bits_flag = False
+            start_bits_flag = False
             print('Start Bits ERROR')
-            print(data)
 
         if bytes_to_int(data[2:4]) == 28:
-            self.data_length_flag = True
+            data_length_flag = True
         else:
-            self.data_length_flag = False
+            data_length_flag = False
             print('Transmission Length ERROR')
-            print(data)
 
-        for c in range(len(self.measures)):
-            self.measures[c] = bytes_to_int(data[c*2+4:c*2+6])
+        check_code = bytes_to_int(data[30:32])
+        my_sum = sum(data[:30])
 
-        self.check_code = bytes_to_int(data[30:32])
+        if my_sum == check_code:
+            check_code_flag = True
+        else:
+            check_code_flag = False
+            print('Check Sum ERROR')
+
+        if start_bits_flag is True and data_length_flag is True and check_code_flag is True:
+            for c in range(len(self.measures)):
+                self.measures[c] = bytes_to_int(data[c * 2 + 4:c * 2 + 6])
+            self.read_flag = True
+        else:
+            self.read_flag = False
 
     def get_measure_by_data_number(self, number, itr=0):
         """Returns data of given data number (from pms7003 datasheet)"""
         self.read_transmission()  # refresh variables
-        if self.start_bits_flag is True and self.data_length_flag is True and self.transmission_flag is True:
+        if self.read_flag is True:
             return self.measures[number]
         elif itr == 32:
             print("Transmission ERROR")
@@ -125,3 +139,53 @@ class PMS7003:
         print('Number of particles with diameter beyond 2.5 um in 0.1L of air = ' + str(self.measures[DATA_10]))
         print('Number of particles with diameter beyond 5.0 um in 0.1L of air = ' + str(self.measures[DATA_11]))
         print('Number of particles with diameter beyond 10 um in 0.1L of air = ' + str(self.measures[DATA_12]))
+
+    def send_command(self, command):
+        """Send command to sensor. Modes: active(default) or passive. States: sleep or wakeup(default)"""
+        start_b1 = 0x42
+        start_b2 = 0x4d
+        if command == active:
+            cmd = 0xe1
+            data_h = 0x00
+            data_l = 0x01
+            lrc_h = 0x01
+            lrc_l = 0x71
+        elif command == sleep:
+            cmd = 0xe4
+            data_h = 0x00
+            data_l = 0x00
+            lrc_h = 0x01
+            lrc_l = 0x73
+        elif command == wakeup:
+            cmd = 0xe4
+            data_h = 0x00
+            data_l = 0x01
+            lrc_h = 0x01
+            lrc_l = 0x74
+        elif command == 'read':
+            cmd = 0xe2
+            data_h = 0x00
+            data_l = 0x00
+            lrc_h = 0x01
+            lrc_l = 0x71
+        # elif command == passive:  # TODO: passive mode in progress
+            # cmd = 0xe1
+            # data_h = 0x00
+            # data_l = 0x00
+            # lrc_h = 0x01
+            # lrc_l = 0x70
+        else:
+            print('Skipped command sending')
+            return
+        protocol = bytearray([start_b1, start_b2, cmd, data_h, data_l, lrc_h, lrc_l])
+        self.pms_serial.write(protocol)
+
+    def sleep(self):
+        self.send_command(sleep)
+        self.pms_serial.read_all()
+
+    def wakeup(self):
+        self.send_command(wakeup)
+        self.pms_serial.read_all()
+        for i in range(10):
+            self.get_all_measures()
