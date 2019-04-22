@@ -11,9 +11,9 @@ temp_measures_pm2_5 = []
 temp_datetime = []
 
 if __name__ == '__main__':
-    sensor = pms_sensor.PMS7003()
-    while True:
-        try:
+    try:
+        sensor = pms_sensor.PMS7003()
+        while True:
             i = 0
             while i <= 10:
                 my_measures = sensor.get_all_measures()
@@ -29,6 +29,6 @@ if __name__ == '__main__':
             # plt.plot(temp_datetime, temp_measures_pm2_5)
             # plt.show()
             # plt.close('all')
-        except KeyboardInterrupt:
-            print('Exit')
-            exit(0)
+    except KeyboardInterrupt:
+        print('Exit')
+        exit(0)

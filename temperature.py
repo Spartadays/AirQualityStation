@@ -3,7 +3,7 @@ try:
     import w1thermsensor
     import sys
 except ImportError as i_error:
-    print(i_error.__class__.__name__ + ": " + i_error.message)
+    print(i_error.__class__.__name__ + ": " + i_error.name)
     exit(-1)
 
 
