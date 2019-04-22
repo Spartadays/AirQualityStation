@@ -4,6 +4,7 @@ try:
     import datetime
     import time
     import requests
+    import sys
 except ImportError as i_error:
     print(i_error.__class__.__name__ + ": " + i_error.name)
     exit(-1)
@@ -29,10 +30,22 @@ if __name__ == '__main__':
         # STARTUP:
         temp_sensor = w1thermsensor.W1ThermSensor()
         pms_sensor = pms7003.PMS7003(port='/dev/ttyS0')
-        id_poznan = 'IPOZNA82'
-        id_szc = 'ISZYDO1'
-        pwd_poznan = 'mh11hcit'
-        pwd_szc = 'pOmlarZy'
+
+        # ARG 1:
+        try:
+            pws_id = str(sys.argv[1])
+        except IndexError:
+            print('Specify your station id in first argument')
+            pws_id = None
+            exit(-1)
+
+        # ARG 2:
+        try:
+            password = str(sys.argv[2])
+        except IndexError:
+            print('Specify your stations password in second argument')
+            password = None
+            exit(-1)
 
         # LOOP:
         while True:
@@ -46,8 +59,8 @@ if __name__ == '__main__':
 
             print(str(now) + ' temperature = ' + str(temp_C) + '*C  PM10 = ' + str(pm_10) + '  PM2.5 = ' + str(pm_2_5))
 
-            send(station_id=id_szc,
-                 station_pwd=pwd_szc,
+            send(station_id=pws_id,
+                 station_pwd=password,
                  tempf=temp_F,
                  pm10=pm_10,
                  pm2_5=pm_2_5)
