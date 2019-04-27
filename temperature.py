@@ -1,3 +1,4 @@
+"""TESTING SCRIPT TO TEMP. SENSOR"""
 try:
     import time
     import w1thermsensor

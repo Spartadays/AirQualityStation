@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+
+# To auto execute this script after login it should be added to crontab with @reboot flag.
+# Edit the file:
+# sudo crontab -e
+# Add line to file:
+# @reboot /home/pi/AirQualityStation/send_to_wunderground.py STATION_ID STATION_KEY &
+
 try:
     import pms7003
     import w1thermsensor
@@ -27,8 +35,12 @@ if __name__ == '__main__':
         print("Ctrl+C to stop script")
 
         # STARTUP:
-        temp_sensor = w1thermsensor.W1ThermSensor()
-        pms_sensor = pms7003.PMS7003(port='/dev/ttyS0')
+        try:
+            temp_sensor = w1thermsensor.W1ThermSensor()
+            pms_sensor = pms7003.PMS7003(port='/dev/ttyS0')
+        except w1thermsensor.errors.NoSensorFoundError:
+            print('Check connections to temperature sensor and try again')
+            exit(-1)
 
         # ARG 1:
         try:
@@ -56,8 +68,9 @@ if __name__ == '__main__':
             pm_10 = pms_sensor.get_pm10()
             pm_2_5 = pms_sensor.get_pm2_5()
 
-            print(str(now) + ' temperature = ' + str(temp_C) + '*C  PM10 = ' + str(pm_10) + '  PM2.5 = ' + str(pm_2_5))
+            print(str(now) + ' temperature = ' + str(temp_C) + '*C PM10 = ' + str(pm_10) + ' PM2.5 = ' + str(pm_2_5))
 
+            # TODO: format and add variable now as date= to send func below
             send(station_id=pws_id,
                  station_pwd=password,
                  tempf=temp_F,

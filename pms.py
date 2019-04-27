@@ -1,3 +1,4 @@
+"""SCRIPT MADE TO TEST PMS SENSOR"""
 try:
     import time
     import pms7003 as pms_sensor

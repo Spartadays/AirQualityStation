@@ -55,7 +55,11 @@ class PMS7003:
         def bytes_to_int(sequence):
             return int.from_bytes(sequence, byteorder='big', signed=False)
 
-        data = self.pms_serial.read(32)
+        try:
+            data = self.pms_serial.read(32)
+        except serial.SerialException:
+            print('ERROR while reading serial port, maybe other script is using sensor...')
+            exit(-1)
 
         if data[0] == 0x42 and data[1] == 0x4d:
             start_bits_flag = True
