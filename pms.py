@@ -16,13 +16,12 @@ if __name__ == '__main__':
         sensor = pms_sensor.PMS7003()
         while True:
             i = 0
-            while i <= 10:
+            while True:
                 my_measures = sensor.get_all_measures()
                 sensor.print_all_measures(update=False)
-                i = i + 1
-            sensor.sleep()
-            time.sleep(60)
-            sensor.wakeup()
+            # sensor.sleep()
+            # time.sleep(60)
+            # sensor.wakeup()
             # now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             # print(now)
             # temp_datetime.append(now)

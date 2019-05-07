@@ -4,7 +4,7 @@
 # Edit the file:
 # sudo crontab -e
 # Add line to file:
-# @reboot /home/pi/AirQualityStation/send_to_wunderground.py STATION_ID STATION_KEY &
+# @reboot /home/pi/AirQualityStation/send_to_.py STATION_ID STATION_KEY &
 
 try:
     import pms7003
