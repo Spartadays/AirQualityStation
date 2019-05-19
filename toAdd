@@ -1,2 +1,0 @@
-# Check if we have enough data to read a payload
-if serialPort.in_waiting >= 32:
