@@ -1,12 +1,9 @@
 """SCRIPT MADE TO TEST PMS SENSOR"""
-try:
-    import time
-    import pms7003 as pms_sensor
-    import datetime
-    import matplotlib.pyplot as plt
-except ImportError as i_error:
-    print(i_error.__class__.__name__ + ": " + i_error.name)
-    exit(-1)
+import time
+import pms7003 as pms_sensor
+import datetime
+import matplotlib.pyplot as plt
+
 
 temp_measures_pm2_5 = []
 temp_datetime = []

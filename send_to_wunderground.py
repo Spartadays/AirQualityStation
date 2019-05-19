@@ -6,15 +6,11 @@
 # Add line to file:
 # @reboot /home/pi/AirQualityStation/send_to_.py STATION_ID STATION_KEY &
 
-try:
-    import pms7003
-    import w1thermsensor
-    import datetime
-    import requests
-    import sys
-except ImportError as i_error:
-    print(i_error.__class__.__name__ + ": " + i_error.name)
-    exit(-1)
+import pms7003
+import w1thermsensor
+import datetime
+import requests
+import sys
 
 
 def send(station_id, station_pwd, tempf, pm10, pm2_5):

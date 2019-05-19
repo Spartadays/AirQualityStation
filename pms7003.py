@@ -48,6 +48,7 @@ class PMS7003:
         print('Initializing sensor. Please wait...')
         for i in range(10):
             self.get_all_measures()
+        print('PMS7003 sensor is ready to use')
 
     def read_transmission(self):
         """Read serial data, process them and update class variables"""
@@ -191,5 +192,5 @@ class PMS7003:
     def wakeup(self):
         self.send_command(wakeup)
         self.pms_serial.read_all()
-        for i in range(10):
+        for i in range(20):
             self.get_all_measures()
