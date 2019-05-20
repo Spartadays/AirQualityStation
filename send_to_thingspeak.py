@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
         # STARTUP:
         start_time = time.time()  # start time measure (including startup)
-        delay_time = 60.0  # minimum is 30 (if we send data during whole year)
+        delay_time = 120.0  # minimum is 30 (if we send data during whole year)
 
         api = 'BY3E4OY6MMTCFJLR'
 
@@ -53,6 +53,10 @@ if __name__ == '__main__':
         while True:
             try:
                 humidity, temperature = Adafruit_DHT.read_retry(dht_sensor_number, dht_pin)
+                if humidity < 0 or humidity > 100:
+                    humidity = None
+                if temperature < -50 or temperature > 70:
+                    temperature = None
             except Exception as error:
                 print(error)
                 print('ERROR using temperature and humidity sensor')
@@ -62,6 +66,8 @@ if __name__ == '__main__':
             try:
                 bme280_data = bme280.sample(bme280_bus, bme280_address, bme280_calibration_params)
                 pressure = bme280_data.pressure
+                if pressure < 0 or pressure > 2000:
+                    pressure = None
             except Exception as error:
                 print(error)
                 print('ERROR using pressure sensor')
